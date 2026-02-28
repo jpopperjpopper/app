@@ -1,0 +1,726 @@
+﻿<!DOCTYPE html>
+
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Ruler Growth Charts — Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sage: #7BA694; --sage-light: #A8C5BC; --sage-pale: #E8F2EF;
+    --blush: #E8A598; --blush-light: #F5D0C8;
+    --cream: #FBF8F3; --warm-white: #FFFDF9;
+    --charcoal: #2D3B36; --mid: #6B7F78; --light-text: #9BB5AE;
+    --card-bg: rgba(255,255,255,0.85);
+    --shadow: 0 8px 32px rgba(45,59,54,0.10);
+    --shadow-hover: 0 16px 48px rgba(45,59,54,0.16);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Nunito',sans-serif; background:var(--cream); color:var(--charcoal); min-height:100vh; overflow-x:hidden; }
+  body::before { content:''; position:fixed; top:-120px; right:-120px; width:400px; height:400px; border-radius:50%; background:radial-gradient(circle,var(--sage-pale) 0%,transparent 70%); pointer-events:none; z-index:0; }
+  body::after  { content:''; position:fixed; bottom:-80px; left:-80px; width:320px; height:320px; border-radius:50%; background:radial-gradient(circle,var(--blush-light) 0%,transparent 70%); pointer-events:none; z-index:0; }
+  .app { max-width:420px; margin:0 auto; min-height:100vh; position:relative; z-index:1; padding-bottom:110px; }
+
+
+.header { padding:56px 24px 24px; display:flex; justify-content:space-between; align-items:flex-start; }
+.header-logo { display:flex; align-items:center; gap:12px; }
+.ruler-icon { width:48px; height:48px; flex-shrink:0; }
+.header-title { font-family:‘Playfair Display’,serif; font-size:20px; font-weight:700; color:#5C3D1E; line-height:1.15; }
+.header-title span { display:block; font-size:11px; font-family:‘Nunito’,sans-serif; font-weight:700; color:#A07850; letter-spacing:2px; text-transform:uppercase; margin-top:1px; }
+.header-actions { display:flex; gap:8px; align-items:center; }
+.icon-btn { width:40px; height:40px; border-radius:50%; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px; transition:transform 0.2s; flex-shrink:0; }
+.icon-btn:hover { transform:scale(1.08); }
+.btn-export { background:linear-gradient(135deg,#B8A9D9,#9B8EC4); box-shadow:0 4px 16px rgba(155,142,196,0.35); }
+
+
+.child-selector { padding:0 24px; display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; align-items:center; }
+.child-selector::-webkit-scrollbar { display:none; }
+.child-pill { padding:10px 20px; border-radius:999px; border:2px solid transparent; background:var(–card-bg); box-shadow:0 2px 12px rgba(45,59,54,0.08); cursor:pointer; font-family:‘Nunito’,sans-serif; font-weight:700; font-size:14px; color:var(–mid); white-space:nowrap; transition:all 0.2s; backdrop-filter:blur(8px); }
+.child-pill.active { background:var(–charcoal); color:white; border-color:var(–charcoal); box-shadow:0 4px 20px rgba(45,59,54,0.25); }
+.child-pill:not(.active):hover { border-color:var(–sage-light); color:var(–sage); }
+.child-pill-add { padding:10px 18px; border-radius:999px; border:2px dashed var(–sage-light); background:transparent; cursor:pointer; font-family:‘Nunito’,sans-serif; font-weight:700; font-size:13px; color:var(–sage); transition:all 0.2s; white-space:nowrap; flex-shrink:0; }
+.child-pill-add:hover { background:var(–sage-pale); border-color:var(–sage); }
+.pill-remove { display:inline-flex; align-items:center; justify-content:center; margin-left:6px; width:16px; height:16px; border-radius:50%; background:rgba(255,255,255,0.25); font-size:13px; line-height:1; color:inherit; transition:background 0.15s; }
+.child-pill.active .pill-remove:hover { background:rgba(255,255,255,0.45); }
+.child-pill:not(.active) .pill-remove:hover { background:rgba(0,0,0,0.1); }
+
+
+.empty-state { margin:32px 24px; background:var(–card-bg); backdrop-filter:blur(12px); border-radius:24px; padding:48px 24px; box-shadow:var(–shadow); text-align:center; display:none; flex-direction:column; align-items:center; gap:12px; }
+.empty-state.visible { display:flex; }
+.empty-icon { font-size:48px; }
+.empty-title { font-family:‘Playfair Display’,serif; font-size:20px; font-weight:700; color:var(–charcoal); }
+.empty-desc { font-size:14px; color:var(–mid); font-weight:600; line-height:1.5; max-width:240px; }
+.empty-cta { margin-top:8px; padding:14px 28px; border-radius:999px; border:none; background:linear-gradient(135deg,var(–sage),#5A9283); color:white; font-family:‘Nunito’,sans-serif; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 4px 20px rgba(90,146,131,0.4); transition:all 0.2s; }
+.empty-cta:hover { transform:translateY(-2px); }
+
+
+.no-child-state { margin:32px 24px; text-align:center; padding:48px 24px; }
+.no-child-state .empty-icon { font-size:48px; margin-bottom:12px; }
+.no-child-state .empty-title { font-family:‘Playfair Display’,serif; font-size:20px; font-weight:700; color:var(–charcoal); margin-bottom:8px; }
+.no-child-state .empty-desc { font-size:14px; color:var(–mid); font-weight:600; }
+
+
+.data-sections { display:none; }
+.data-sections.visible { display:block; }
+
+
+.stats-row { padding:20px 24px; display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.stat-card { background:var(–card-bg); backdrop-filter:blur(12px); border-radius:20px; padding:20px; box-shadow:var(–shadow); transition:all 0.25s; position:relative; overflow:hidden; }
+.stat-card:hover { transform:translateY(-3px); box-shadow:var(–shadow-hover); }
+.stat-card::before { content:’’; position:absolute; top:-20px; right:-20px; width:80px; height:80px; border-radius:50%; opacity:0.12; }
+.stat-card.height::before { background:var(–sage); }
+.stat-card.weight::before { background:var(–blush); }
+.stat-card.bmi::before   { background:#B8A9D9; }
+.stat-card.age::before   { background:#F0C980; }
+.stat-icon  { font-size:22px; margin-bottom:10px; }
+.stat-label { font-size:11px; font-weight:700; color:var(–light-text); letter-spacing:1px; text-transform:uppercase; margin-bottom:4px; }
+.stat-value { font-size:26px; font-weight:900; color:var(–charcoal); line-height:1; }
+.stat-unit  { font-size:13px; font-weight:600; color:var(–mid); }
+.stat-change { font-size:11px; font-weight:700; color:var(–sage); margin-top:6px; }
+
+
+.percentile-row { display:flex; gap:10px; padding:0 24px; margin-bottom:20px; }
+.percentile-card { flex:1; background:var(–card-bg); backdrop-filter:blur(12px); border-radius:16px; padding:14px; box-shadow:var(–shadow); text-align:center; }
+.percentile-label { font-size:10px; font-weight:700; color:var(–light-text); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px; }
+.percentile-value { font-size:22px; font-weight:900; color:var(–charcoal); }
+.percentile-sub   { font-size:10px; font-weight:600; color:var(–mid); }
+
+
+.section { padding:0 24px; margin-bottom:20px; }
+.section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+.section-title  { font-family:‘Playfair Display’,serif; font-size:18px; font-weight:700; color:var(–charcoal); }
+.section-action { font-size:12px; font-weight:700; color:var(–sage); cursor:pointer; padding:4px 0; }
+.section-action:hover { text-decoration:underline; }
+.chart-card { background:var(–card-bg); backdrop-filter:blur(12px); border-radius:24px; padding:20px; box-shadow:var(–shadow); }
+.chart-tabs { display:flex; gap:8px; margin-bottom:16px; }
+.chart-tab { padding:6px 14px; border-radius:999px; border:none; font-family:‘Nunito’,sans-serif; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s; background:var(–sage-pale); color:var(–mid); }
+.chart-tab.active { background:var(–sage); color:white; box-shadow:0 2px 10px rgba(123,166,148,0.35); }
+.chart-area { position:relative; height:160px; }
+svg.chart { width:100%; height:100%; }
+
+
+.milestone-list { display:flex; flex-direction:column; gap:10px; }
+.milestone-item { background:var(–card-bg); backdrop-filter:blur(12px); border-radius:18px; padding:16px 18px; box-shadow:var(–shadow); display:flex; align-items:center; gap:14px; transition:all 0.2s; }
+.milestone-item:hover { transform:translateX(4px); box-shadow:var(–shadow-hover); }
+.milestone-icon  { width:42px; height:42px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+.milestone-info  { flex:1; }
+.milestone-title { font-size:14px; font-weight:800; color:var(–charcoal); margin-bottom:2px; }
+.milestone-date  { font-size:11px; font-weight:600; color:var(–light-text); }
+.milestone-badge { padding:4px 10px; border-radius:999px; font-size:10px; font-weight:800; letter-spacing:0.5px; white-space:nowrap; }
+.badge-achieved { background:var(–sage-pale); color:var(–sage); }
+.badge-upcoming { background:var(–blush-light); color:var(–blush); }
+.milestone-empty { text-align:center; padding:24px; font-size:13px; font-weight:700; color:var(–light-text); }
+
+
+.fab { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:linear-gradient(135deg,var(–sage),#5A9283); color:white; border:none; border-radius:999px; padding:16px 32px; font-family:‘Nunito’,sans-serif; font-size:15px; font-weight:800; cursor:pointer; box-shadow:0 8px 32px rgba(90,146,131,0.45); display:flex; align-items:center; gap:8px; transition:all 0.25s; z-index:100; }
+.fab:hover  { transform:translateX(-50%) translateY(-3px); }
+.fab:active { transform:translateX(-50%) scale(0.97); }
+.fab.hidden { display:none; }
+
+
+.toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px); background:var(–charcoal); color:white; border-radius:999px; padding:10px 22px; font-family:‘Nunito’,sans-serif; font-size:13px; font-weight:700; opacity:0; transition:all 0.3s; z-index:300; white-space:nowrap; pointer-events:none; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+
+.modal-overlay { position:fixed; inset:0; background:rgba(45,59,54,0.5); backdrop-filter:blur(8px); z-index:200; display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+.modal-overlay.open { opacity:1; pointer-events:all; }
+.modal { background:var(–warm-white); border-radius:32px 32px 0 0; padding:12px 24px 48px; width:100%; max-width:420px; transform:translateY(100%); transition:transform 0.35s cubic-bezier(0.32,0.72,0,1); max-height:90vh; overflow-y:auto; }
+.modal-overlay.open .modal { transform:translateY(0); }
+.modal-handle { width:40px; height:4px; border-radius:2px; background:var(–sage-light); margin:0 auto 24px; }
+.modal-title  { font-family:‘Playfair Display’,serif; font-size:22px; font-weight:700; color:var(–charcoal); margin-bottom:24px; text-align:center; }
+.form-group   { margin-bottom:18px; }
+.form-label   { font-size:12px; font-weight:700; color:var(–light-text); letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; display:block; }
+.form-input   { width:100%; padding:14px 16px; border-radius:14px; border:2px solid var(–sage-pale); background:var(–sage-pale); font-family:‘Nunito’,sans-serif; font-size:16px; font-weight:700; color:var(–charcoal); outline:none; transition:all 0.2s; }
+.form-input:focus { border-color:var(–sage); background:white; }
+.form-row  { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.btn-save  { width:100%; padding:16px; border-radius:16px; border:none; background:linear-gradient(135deg,var(–sage),#5A9283); color:white; font-family:‘Nunito’,sans-serif; font-size:16px; font-weight:800; cursor:pointer; box-shadow:0 6px 24px rgba(90,146,131,0.4); transition:all 0.2s; margin-top:8px; }
+.btn-save:hover { transform:translateY(-2px); }
+
+
+.emoji-picker { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+.emoji-opt { width:40px; height:40px; border-radius:12px; border:2px solid var(–sage-pale); background:var(–sage-pale); font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+.emoji-opt.selected { border-color:var(–sage); background:white; box-shadow:0 2px 10px rgba(123,166,148,0.3); }
+.emoji-opt:hover { border-color:var(–sage-light); }
+
+
+.radio-row { display:flex; gap:10px; }
+.radio-opt { flex:1; padding:12px; border-radius:14px; border:2px solid var(–sage-pale); background:var(–sage-pale); font-family:‘Nunito’,sans-serif; font-size:13px; font-weight:700; color:var(–mid); cursor:pointer; text-align:center; transition:all 0.15s; }
+.radio-opt.selected { border-color:var(–sage); background:white; color:var(–sage); }
+
+
+@keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+.stat-card,.chart-card,.milestone-item,.percentile-card { animation:slideUp 0.4s ease both; }
+</style>
+
+
+</head>
+<body>
+<div class="app">
+
+
+  <div class="header">
+    <div class="header-logo">
+      <svg class="ruler-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="6" y="14" width="36" height="20" rx="3" fill="#C8956A"/>
+        <rect x="6" y="14" width="36" height="20" rx="3" fill="url(#woodGrain)"/>
+        <line x1="14" y1="15" x2="11" y2="33" stroke="#B07A4E" stroke-width="0.7" opacity="0.5"/>
+        <line x1="22" y1="15" x2="19" y2="33" stroke="#B07A4E" stroke-width="0.7" opacity="0.4"/>
+        <line x1="30" y1="15" x2="27" y2="33" stroke="#B07A4E" stroke-width="0.7" opacity="0.5"/>
+        <line x1="38" y1="15" x2="36" y2="33" stroke="#B07A4E" stroke-width="0.7" opacity="0.3"/>
+        <rect x="6" y="14" width="36" height="20" rx="3" stroke="#8B5E3C" stroke-width="1.2"/>
+        <line x1="12" y1="14" x2="12" y2="22" stroke="#8B5E3C" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="16" y1="14" x2="16" y2="19" stroke="#8B5E3C" stroke-width="1" stroke-linecap="round"/>
+        <line x1="20" y1="14" x2="20" y2="22" stroke="#8B5E3C" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="24" y1="14" x2="24" y2="25" stroke="#8B5E3C" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="28" y1="14" x2="28" y2="22" stroke="#8B5E3C" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="32" y1="14" x2="32" y2="19" stroke="#8B5E3C" stroke-width="1" stroke-linecap="round"/>
+        <line x1="36" y1="14" x2="36" y2="22" stroke="#8B5E3C" stroke-width="1.2" stroke-linecap="round"/>
+        <text x="24" y="32" text-anchor="middle" font-size="7" fill="#8B5E3C" opacity="0.7">✦</text>
+        <defs>
+          <linearGradient id="woodGrain" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#E0AA7A" stop-opacity="0.6"/>
+            <stop offset="50%" stop-color="#C8956A" stop-opacity="0"/>
+            <stop offset="100%" stop-color="#A06840" stop-opacity="0.4"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div>
+        <div class="header-title">Ruler Growth Charts<span>Growth Tracker</span></div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn btn-export" title="Export data as CSV" onclick="exportCSV()">📤</button>
+    </div>
+  </div>
+
+
+  <!-- Promo banner -->
+
+
+  <div style="margin: 0 24px 20px; background: #F5EDE4; border-radius: 18px; padding: 12px 18px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 16px rgba(160,104,64,0.10); cursor: pointer;" onclick="window.open('https://www.rulergrowthcharts.com.au','_blank')">
+    <div style="font-size:22px; flex-shrink:0;">📏</div>
+    <div style="font-size:12px; font-weight:800; color:#A06840; letter-spacing:0.3px;">Shop at rulergrowthcharts.com.au →</div>
+  </div>
+
+
+  <div class="child-selector" id="child-selector">
+    <button class="child-pill-add" id="add-child-btn" onclick="showAddChildInput()">+ Add Child</button>
+    <div id="add-child-form" style="display:none; align-items:center; gap:6px; flex-shrink:0;">
+      <input id="child-name-input" class="form-input" type="text" placeholder="Child's name"
+        style="padding:8px 12px; font-size:13px; width:130px; border-radius:999px; margin:0;"
+        onkeydown="if(event.key==='Enter') confirmAddChild(); if(event.key==='Escape') cancelAddChild();">
+      <button onclick="confirmAddChild()" style="padding:8px 14px; border-radius:999px; border:none; background:var(--sage); color:white; font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; cursor:pointer;">Add</button>
+      <button onclick="cancelAddChild()" style="padding:8px 12px; border-radius:999px; border:2px solid var(--sage-light); background:transparent; font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; color:var(--mid); cursor:pointer;">✕</button>
+    </div>
+  </div>
+
+
+  <div class="no-child-state" id="no-child-state">
+    <div class="empty-icon">👶</div>
+    <div class="empty-title">Welcome!</div>
+    <div class="empty-desc">Tap <strong>+ Add Child</strong> above to get started.</div>
+  </div>
+
+
+  <div class="empty-state" id="empty-state">
+    <div class="empty-icon">📏</div>
+    <div class="empty-title">No measurements yet</div>
+    <div class="empty-desc">Add your first measurement to start tracking this child's growth journey.</div>
+    <button class="empty-cta" onclick="openMeasureModal()">+ Add First Measurement</button>
+  </div>
+
+
+  <div class="data-sections" id="data-sections">
+    <div class="stats-row">
+      <div class="stat-card height">
+        <div class="stat-icon">📏</div>
+        <div class="stat-label">Height</div>
+        <div class="stat-value" id="stat-height">—</div>
+        <div class="stat-change" id="stat-height-change"></div>
+      </div>
+      <div class="stat-card weight">
+        <div class="stat-icon">⚖️</div>
+        <div class="stat-label">Weight</div>
+        <div class="stat-value" id="stat-weight">—</div>
+        <div class="stat-change" id="stat-weight-change"></div>
+      </div>
+      <div class="stat-card bmi">
+        <div class="stat-icon">💜</div>
+        <div class="stat-label">BMI</div>
+        <div class="stat-value" id="stat-bmi">—</div>
+        <div class="stat-change" id="stat-bmi-change" style="color:#9B8EC4;"></div>
+      </div>
+      <div class="stat-card age">
+        <div class="stat-icon">🎂</div>
+        <div class="stat-label">Last entry</div>
+        <div class="stat-value" id="stat-age" style="font-size:16px; padding-top:4px;">—</div>
+        <div class="stat-change" id="stat-age-change" style="color:#C9A055;"></div>
+      </div>
+    </div>
+
+
+```
+<div class="percentile-row">
+  <div class="percentile-card">
+    <div class="percentile-label">Height %ile</div>
+    <div class="percentile-value" id="pct-height">—</div>
+    <div class="percentile-sub">WHO Standard</div>
+  </div>
+  <div class="percentile-card">
+    <div class="percentile-label">Weight %ile</div>
+    <div class="percentile-value" id="pct-weight">—</div>
+    <div class="percentile-sub">WHO Standard</div>
+  </div>
+  <div class="percentile-card">
+    <div class="percentile-label">Head Circ.</div>
+    <div class="percentile-value" id="pct-head">—</div>
+    <div class="percentile-sub" id="pct-head-sub"></div>
+  </div>
+</div>
+
+
+<div class="section">
+  <div class="section-header">
+    <div class="section-title">Growth Curve</div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-tabs">
+      <button class="chart-tab active" onclick="switchTab(this,'height')">Height</button>
+      <button class="chart-tab" onclick="switchTab(this,'weight')">Weight</button>
+      <button class="chart-tab" onclick="switchTab(this,'bmi')">BMI</button>
+    </div>
+    <div class="chart-area">
+      <svg class="chart" viewBox="0 0 340 140" preserveAspectRatio="none">
+        <line x1="0" y1="30" x2="340" y2="30" stroke="#E8F2EF" stroke-width="1"/>
+        <line x1="0" y1="60" x2="340" y2="60" stroke="#E8F2EF" stroke-width="1"/>
+        <line x1="0" y1="90" x2="340" y2="90" stroke="#E8F2EF" stroke-width="1"/>
+        <line x1="0" y1="120" x2="340" y2="120" stroke="#E8F2EF" stroke-width="1"/>
+        <path id="chart-area-fill" d="" fill="url(#chartGrad)" opacity="0.3"/>
+        <path id="chart-path" d="" fill="none" stroke="var(--sage)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <g id="chart-dots"></g>
+        <text id="chart-empty-msg" x="170" y="75" text-anchor="middle" font-family="Nunito" font-size="12" font-weight="700" fill="#9BB5AE">No data — add a measurement</text>
+        <defs>
+          <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--sage)" stop-opacity="0.6"/>
+            <stop offset="100%" stop-color="var(--sage)" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <div style="display:flex; justify-content:space-between; margin-top:8px;" id="chart-x-labels"></div>
+  </div>
+</div>
+
+
+<div class="section">
+  <div class="section-header">
+    <div class="section-title">Milestones</div>
+    <span class="section-action" onclick="openMilestoneModal()">+ Add →</span>
+  </div>
+  <div class="milestone-list" id="milestone-list"></div>
+</div>
+```
+
+
+  </div>
+</div>
+
+
+<button class="fab hidden" id="fab" onclick="openMeasureModal()">
+  <span>+</span> Add Measurement
+</button>
+
+
+<div class="toast" id="toast"></div>
+
+
+<div class="modal-overlay" id="measure-modal" onclick="closeModalOutside(event,'measure-modal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="measure-modal-title">New Measurement</div>
+    <div class="form-group">
+      <label class="form-label">Date</label>
+      <input class="form-input" type="date" id="measure-date">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Height (cm)</label>
+        <input class="form-input" type="number" placeholder="e.g. 85" id="height-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Weight (kg)</label>
+        <input class="form-input" type="number" placeholder="e.g. 12.5" id="weight-input">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Head Circ. (cm)</label>
+        <input class="form-input" type="number" placeholder="e.g. 46" id="head-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <input class="form-input" type="text" placeholder="e.g. Doctor visit" id="notes-input">
+      </div>
+    </div>
+    <button class="btn-save" onclick="saveMeasurement()">Save Measurement 🌱</button>
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="milestone-modal" onclick="closeModalOutside(event,'milestone-modal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Milestone</div>
+    <div class="form-group">
+      <label class="form-label">Milestone</label>
+      <input class="form-input" type="text" placeholder="e.g. First steps, First word…" id="milestone-title-input">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Icon</label>
+      <div class="emoji-picker" id="emoji-picker"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input class="form-input" type="date" id="milestone-date-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <div class="radio-row">
+          <div class="radio-opt selected" id="status-achieved" onclick="selectStatus('achieved')">✓ Done</div>
+          <div class="radio-opt" id="status-upcoming" onclick="selectStatus('upcoming')">Soon</div>
+        </div>
+      </div>
+    </div>
+    <button class="btn-save" onclick="saveMilestone()">Save Milestone ⭐</button>
+  </div>
+</div>
+
+
+<script>
+  const STORAGE_KEY = 'rgc_tracker_v1';
+  const MILESTONE_EMOJIS = ['🚶','💬','🎨','🍼','🏃','🧩','🎂','📚','🚲','🏊','✏️','🎵','🌟','🦷','👟','🫂'];
+  let selectedEmoji = MILESTONE_EMOJIS[0];
+  let selectedStatus = 'achieved';
+  let state = { children: [], activeId: null, activeTab: 'height' };
+
+
+  function saveState() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ children: state.children, activeId: state.activeId })); } catch(e) {}
+  }
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        state.children = saved.children || [];
+        state.activeId = saved.activeId || (state.children[0]?.id ?? null);
+      }
+    } catch(e) {}
+  }
+
+
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+
+  const picker = document.getElementById('emoji-picker');
+  MILESTONE_EMOJIS.forEach((em, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'emoji-opt' + (i === 0 ? ' selected' : '');
+    btn.textContent = em;
+    btn.onclick = () => {
+      picker.querySelectorAll('.emoji-opt').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedEmoji = em;
+    };
+    picker.appendChild(btn);
+  });
+
+
+  function selectStatus(s) {
+    selectedStatus = s;
+    document.getElementById('status-achieved').classList.toggle('selected', s === 'achieved');
+    document.getElementById('status-upcoming').classList.toggle('selected', s === 'upcoming');
+  }
+
+
+  function showAddChildInput() {
+    document.getElementById('add-child-btn').style.display = 'none';
+    document.getElementById('add-child-form').style.display = 'flex';
+    document.getElementById('child-name-input').focus();
+  }
+  function cancelAddChild() {
+    document.getElementById('add-child-form').style.display = 'none';
+    document.getElementById('add-child-btn').style.display = '';
+    document.getElementById('child-name-input').value = '';
+  }
+  function confirmAddChild() {
+    const name = document.getElementById('child-name-input').value.trim();
+    if (!name) return;
+    const emojis = ['🌸','🌿','🌼','🌻','🍀','🌱','⭐','🦋'];
+    const child = { id: Date.now().toString(), name, emoji: emojis[state.children.length % emojis.length], measurements: [], milestones: [] };
+    state.children.push(child);
+    saveState();
+    renderChildPills();
+    setActiveChild(child.id);
+    cancelAddChild();
+  }
+  function removeChild(id, e) {
+    e.stopPropagation();
+    state.children = state.children.filter(c => c.id !== id);
+    if (state.activeId === id) state.activeId = state.children.length ? state.children[state.children.length-1].id : null;
+    saveState();
+    renderChildPills();
+    renderActiveChild();
+  }
+  function setActiveChild(id) {
+    state.activeId = id;
+    saveState();
+    renderChildPills();
+    renderActiveChild();
+  }
+  function renderChildPills() {
+    const selector = document.getElementById('child-selector');
+    selector.querySelectorAll('.child-pill').forEach(p => p.remove());
+    const addBtn = document.getElementById('add-child-btn');
+    state.children.forEach(child => {
+      const pill = document.createElement('button');
+      pill.className = 'child-pill' + (child.id === state.activeId ? ' active' : '');
+      pill.innerHTML = `${child.emoji} ${child.name} <span class="pill-remove">×</span>`;
+      pill.onclick = e => e.target.classList.contains('pill-remove') ? removeChild(child.id, e) : setActiveChild(child.id);
+      selector.insertBefore(pill, addBtn);
+    });
+  }
+
+
+  function renderActiveChild() {
+    const child = state.children.find(c => c.id === state.activeId);
+    const fab = document.getElementById('fab');
+    const noChild = document.getElementById('no-child-state');
+    const emptyState = document.getElementById('empty-state');
+    const dataSections = document.getElementById('data-sections');
+    noChild.style.display = 'none';
+    emptyState.classList.remove('visible');
+    dataSections.classList.remove('visible');
+    if (!child) {
+      fab.classList.add('hidden');
+      noChild.style.display = state.children.length === 0 ? 'block' : 'none';
+      return;
+    }
+    fab.classList.remove('hidden');
+    document.getElementById('measure-modal-title').textContent = `New Measurement — ${child.name}`;
+    if (child.measurements.length === 0) {
+      emptyState.classList.add('visible');
+    } else {
+      dataSections.classList.add('visible');
+      renderStats(child);
+      renderChart(child, state.activeTab);
+    }
+    renderMilestones(child);
+  }
+
+
+  function renderStats(child) {
+    const sorted = [...child.measurements].sort((a,b) => new Date(a.date)-new Date(b.date));
+    const latest = sorted[sorted.length-1];
+    const prev = sorted.length > 1 ? sorted[sorted.length-2] : null;
+    if (latest.height) {
+      document.getElementById('stat-height').innerHTML = `${latest.height} <span class="stat-unit">cm</span>`;
+      document.getElementById('stat-height-change').textContent = prev?.height ? `↑ +${(latest.height-prev.height).toFixed(1)} cm since last` : 'First measurement';
+    } else { document.getElementById('stat-height').textContent='—'; document.getElementById('stat-height-change').textContent=''; }
+    if (latest.weight) {
+      document.getElementById('stat-weight').innerHTML = `${latest.weight} <span class="stat-unit">kg</span>`;
+      document.getElementById('stat-weight-change').textContent = prev?.weight ? `↑ +${(latest.weight-prev.weight).toFixed(1)} kg since last` : 'First measurement';
+    } else { document.getElementById('stat-weight').textContent='—'; document.getElementById('stat-weight-change').textContent=''; }
+    if (latest.height && latest.weight) {
+      document.getElementById('stat-bmi').textContent = (latest.weight/((latest.height/100)**2)).toFixed(1);
+      document.getElementById('stat-bmi-change').textContent = 'Calculated';
+    } else { document.getElementById('stat-bmi').textContent='—'; document.getElementById('stat-bmi-change').textContent=''; }
+    const d = new Date(latest.date);
+    document.getElementById('stat-age').textContent = d.toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
+    document.getElementById('stat-age-change').textContent = latest.notes || '';
+    document.getElementById('pct-height').textContent = '—';
+    document.getElementById('pct-weight').textContent = '—';
+    document.getElementById('pct-head').textContent = latest.head ? `${latest.head} cm` : '—';
+    document.getElementById('pct-head-sub').textContent = latest.head ? 'Head circumference' : '';
+  }
+
+
+  function renderMilestones(child) {
+    const list = document.getElementById('milestone-list');
+    if (!child || child.milestones.length === 0) {
+      list.innerHTML = '<div class="milestone-empty">No milestones recorded yet.</div>';
+      return;
+    }
+    list.innerHTML = '';
+    child.milestones.forEach((m, idx) => {
+      const item = document.createElement('div');
+      item.className = 'milestone-item';
+      const bg = m.status === 'achieved' ? 'var(--sage-pale)' : 'var(--blush-light)';
+      item.innerHTML = `
+        <div class="milestone-icon" style="background:${bg}">${m.emoji}</div>
+        <div class="milestone-info">
+          <div class="milestone-title">${m.title}</div>
+          <div class="milestone-date">${m.date ? new Date(m.date).toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'}) : 'Date not set'}</div>
+        </div>
+        <span class="milestone-badge ${m.status==='achieved'?'badge-achieved':'badge-upcoming'}">${m.status==='achieved'?'✓ Done':'Soon'}</span>
+        <span style="margin-left:6px;cursor:pointer;font-size:16px;color:var(--light-text);" onclick="removeMilestone(${idx})">×</span>`;
+      list.appendChild(item);
+    });
+  }
+
+
+  function removeMilestone(idx) {
+    const child = state.children.find(c => c.id === state.activeId);
+    if (!child) return;
+    child.milestones.splice(idx, 1);
+    saveState();
+    renderMilestones(child);
+  }
+
+
+  function switchTab(btn, tab) {
+    document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    state.activeTab = tab;
+    const child = state.children.find(c => c.id === state.activeId);
+    if (child) renderChart(child, tab);
+  }
+
+
+  function renderChart(child, tab) {
+    const sorted = [...child.measurements]
+      .filter(m => tab === 'bmi' ? (m.height && m.weight) : m[tab])
+      .sort((a,b) => new Date(a.date)-new Date(b.date));
+    const emptyMsg = document.getElementById('chart-empty-msg');
+    const path = document.getElementById('chart-path');
+    const areaFill = document.getElementById('chart-area-fill');
+    const dots = document.getElementById('chart-dots');
+    const xLabels = document.getElementById('chart-x-labels');
+    dots.innerHTML=''; xLabels.innerHTML='';
+    const colors = { height:'var(--sage)', weight:'var(--blush)', bmi:'#B8A9D9' };
+    path.style.stroke = colors[tab];
+    if (sorted.length < 2) {
+      path.setAttribute('d',''); areaFill.setAttribute('d','');
+      emptyMsg.style.display='';
+      emptyMsg.textContent = sorted.length===0 ? 'No data — add a measurement' : 'Add one more entry to see a chart';
+      return;
+    }
+    emptyMsg.style.display='none';
+    const vals = sorted.map(m => tab==='bmi' ? parseFloat((m.weight/((m.height/100)**2)).toFixed(1)) : parseFloat(m[tab]));
+    const minV=Math.min(...vals), maxV=Math.max(...vals), range=maxV-minV||1;
+    const W=340,H=130,PAD=10;
+    const pts = sorted.map((m,i) => ({
+      x: (i/(sorted.length-1))*(W-PAD*2)+PAD,
+      y: H-((vals[i]-minV)/range)*(H-PAD*2)-PAD,
+      m, v:vals[i]
+    }));
+    const lineD = pts.map((p,i)=>`${i===0?'M':'L'}${p.x},${p.y}`).join(' ');
+    path.setAttribute('d',lineD);
+    areaFill.setAttribute('d',lineD+` L${pts[pts.length-1].x},140 L${pts[0].x},140 Z`);
+    pts.forEach((p,i) => {
+      const isLast=i===pts.length-1;
+      const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx',p.x); c.setAttribute('cy',p.y);
+      c.setAttribute('r',isLast?6:4);
+      c.setAttribute('fill',isLast?colors[tab]:'white');
+      c.setAttribute('stroke',colors[tab]); c.setAttribute('stroke-width',isLast?2.5:2);
+      dots.appendChild(c);
+    });
+    pts.forEach((p,i) => {
+      if (i===0||i===pts.length-1||(sorted.length>4&&i%Math.ceil(sorted.length/4)===0)) {
+        const span=document.createElement('span');
+        span.textContent=new Date(p.m.date).toLocaleDateString('en-AU',{month:'short',year:'2-digit'});
+        span.style.cssText=`font-size:10px;font-weight:700;color:${i===pts.length-1?colors[tab]:'var(--light-text)'}`;
+        xLabels.appendChild(span);
+      }
+    });
+  }
+
+
+  function openMeasureModal() {
+    document.getElementById('measure-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('measure-modal').classList.add('open');
+  }
+  function openMilestoneModal() {
+    document.getElementById('milestone-date-input').value = new Date().toISOString().split('T')[0];
+    document.getElementById('milestone-title-input').value = '';
+    selectStatus('achieved');
+    selectedEmoji = MILESTONE_EMOJIS[0];
+    picker.querySelectorAll('.emoji-opt').forEach((b,i) => b.classList.toggle('selected', i===0));
+    document.getElementById('milestone-modal').classList.add('open');
+  }
+  function closeModalOutside(e, id) {
+    if (e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open');
+  }
+
+
+  function saveMeasurement() {
+    const child = state.children.find(c => c.id === state.activeId);
+    if (!child) return;
+    const height = parseFloat(document.getElementById('height-input').value) || null;
+    const weight = parseFloat(document.getElementById('weight-input').value) || null;
+    const head   = parseFloat(document.getElementById('head-input').value)   || null;
+    const notes  = document.getElementById('notes-input').value.trim() || '';
+    const date   = document.getElementById('measure-date').value || new Date().toISOString().split('T')[0];
+    if (!height && !weight && !head) return;
+    child.measurements.push({ date, height, weight, head, notes });
+    saveState();
+    ['height-input','weight-input','head-input','notes-input'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('measure-modal').classList.remove('open');
+    renderActiveChild();
+    showToast('✓ Measurement saved');
+  }
+
+
+  function saveMilestone() {
+    const child = state.children.find(c => c.id === state.activeId);
+    if (!child) return;
+    const title = document.getElementById('milestone-title-input').value.trim();
+    if (!title) { document.getElementById('milestone-title-input').focus(); return; }
+    const date = document.getElementById('milestone-date-input').value || null;
+    child.milestones.push({ title, emoji: selectedEmoji, date, status: selectedStatus });
+    saveState();
+    document.getElementById('milestone-modal').classList.remove('open');
+    renderMilestones(child);
+    showToast('⭐ Milestone saved');
+  }
+
+
+  function exportCSV() {
+    if (state.children.length === 0) { showToast('No data to export yet'); return; }
+    let csv = 'Child,Date,Height (cm),Weight (kg),Head Circ. (cm),BMI,Notes\n';
+    state.children.forEach(child => {
+      const sorted = [...child.measurements].sort((a,b) => new Date(a.date)-new Date(b.date));
+      sorted.forEach(m => {
+        const bmi = m.height && m.weight ? (m.weight/((m.height/100)**2)).toFixed(1) : '';
+        csv += [child.name, m.date, m.height||'', m.weight||'', m.head||'', bmi, `"${(m.notes||'').replace(/"/g,'""')}"`].join(',') + '\n';
+      });
+    });
+    const blob = new Blob([csv], { type:'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'growth-data.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('📥 CSV downloaded');
+  }
+
+
+  loadState();
+  renderChildPills();
+  renderActiveChild();
+</script>
+
+
+</body>
+</html>
