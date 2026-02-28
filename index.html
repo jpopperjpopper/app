@@ -100,4 +100,769 @@ svg.chart { width:100%; height:100%; }
 
 
 .milestone-list { display:flex; flex-direction:column; gap:10px; }
-.milestone-item { background
+.milestone-item { background:var(–card-bg); backdrop-filter:blur(12px); border-radius:18px; padding:16px 18px; box-shadow:var(–shadow); display:flex; align-items:center; gap:14px; transition:all 0.2s; }
+.milestone-item:hover { transform:translateX(4px); box-shadow:var(–shadow-hover); }
+.milestone-icon  { width:42px; height:42px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+.milestone-info  { flex:1; }
+.milestone-title { font-size:14px; font-weight:800; color:var(–charcoal); margin-bottom:2px; }
+.milestone-date  { font-size:11px; font-weight:600; color:var(–light-text); }
+.milestone-badge { padding:4px 10px; border-radius:999px; font-size:10px; font-weight:800; letter-spacing:0.5px; white-space:nowrap; }
+.badge-achieved { background:var(–sage-pale); color:var(–sage); }
+.badge-upcoming { background:var(–blush-light); color:var(–blush); }
+.milestone-empty { text-align:center; padding:24px; font-size:13px; font-weight:700; color:var(–light-text); }
+
+
+.fab { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:linear-gradient(135deg,var(–sage),#5A9283); color:white; border:none; border-radius:999px; padding:16px 32px; font-family:‘Nunito’,sans-serif; font-size:15px; font-weight:800; cursor:pointer; box-shadow:0 8px 32px rgba(90,146,131,0.45); display:flex; align-items:center; gap:8px; transition:all 0.25s; z-index:100; }
+.fab:hover  { transform:translateX(-50%) translateY(-3px); }
+.fab:active { transform:translateX(-50%) scale(0.97); }
+.fab.hidden { display:none; }
+
+
+.toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px); background:var(–charcoal); color:white; border-radius:999px; padding:10px 22px; font-family:‘Nunito’,sans-serif; font-size:13px; font-weight:700; opacity:0; transition:all 0.3s; z-index:300; white-space:nowrap; pointer-events:none; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+
+.modal-overlay { position:fixed; inset:0; background:rgba(45,59,54,0.5); backdrop-filter:blur(8px); z-index:200; display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+.modal-overlay.open { opacity:1; pointer-events:all; }
+.modal { background:var(–warm-white); border-radius:32px 32px 0 0; padding:12px 24px 48px; width:100%; max-width:420px; transform:translateY(100%); transition:transform 0.35s cubic-bezier(0.32,0.72,0,1); max-height:90vh; overflow-y:auto; }
+.modal-overlay.open .modal { transform:translateY(0); }
+.modal-handle { width:40px; height:4px; border-radius:2px; background:var(–sage-light); margin:0 auto 24px; }
+.modal-title  { font-family:‘Playfair Display’,serif; font-size:22px; font-weight:700; color:var(–charcoal); margin-bottom:24px; text-align:center; }
+.form-group   { margin-bottom:18px; }
+.form-label   { font-size:12px; font-weight:700; color:var(–light-text); letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; display:block; }
+.form-input   { width:100%; padding:14px 16px; border-radius:14px; border:2px solid var(–sage-pale); background:var(–sage-pale); font-family:‘Nunito’,sans-serif; font-size:16px; font-weight:700; color:var(–charcoal); outline:none; transition:all 0.2s; }
+.form-input:focus { border-color:var(–sage); background:white; }
+.form-row  { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.btn-save  { width:100%; padding:16px; border-radius:16px; border:none; background:linear-gradient(135deg,var(–sage),#5A9283); color:white; font-family:‘Nunito’,sans-serif; font-size:16px; font-weight:800; cursor:pointer; box-shadow:0 6px 24px rgba(90,146,131,0.4); transition:all 0.2s; margin-top:8px; }
+.btn-save:hover { transform:translateY(-2px); }
+.sex-toggle { display:flex; gap:10px; }
+.sex-opt { flex:1; padding:14px; border-radius:14px; border:2px solid var(–sage-pale); background:var(–sage-pale); font-family:‘Nunito’,sans-serif; font-size:14px; font-weight:700; color:var(–mid); cursor:pointer; text-align:center; transition:all 0.15s; }
+.sex-opt.selected { border-color:var(–sage); background:white; color:var(–sage); }
+
+
+.emoji-picker { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+.emoji-opt { width:40px; height:40px; border-radius:12px; border:2px solid var(–sage-pale); background:var(–sage-pale); font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+.emoji-opt.selected { border-color:var(–sage); background:white; box-shadow:0 2px 10px rgba(123,166,148,0.3); }
+.emoji-opt:hover { border-color:var(–sage-light); }
+.radio-row { display:flex; gap:10px; }
+.radio-opt { flex:1; padding:12px; border-radius:14px; border:2px solid var(–sage-pale); background:var(–sage-pale); font-family:‘Nunito’,sans-serif; font-size:13px; font-weight:700; color:var(–mid); cursor:pointer; text-align:center; transition:all 0.15s; }
+.radio-opt.selected { border-color:var(–sage); background:white; color:var(–sage); }
+
+
+@keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+.stat-card,.chart-card,.milestone-item,.percentile-card { animation:slideUp 0.4s ease both; }
+</style>
+
+
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-logo">
+      <svg class="ruler-icon" viewBox="0 0 48 48" fill="none">
+        <rect x="6" y="14" width="36" height="20" rx="3" fill="#C8956A"/>
+        <rect x="6" y="14" width="36" height="20" rx="3" fill="url(#woodGrain)"/>
+        <line x1="14" y1="15" x2="11" y2="33" stroke="#B07A4E" stroke-width="0.7" opacity="0.5"/>
+        <line x1="22" y1="15" x2="19" y2="33" stroke="#B07A4E" stroke-width="0.7" opacity="0.4"/>
+        <line x1="30" y1="15" x2="27" y2="33" stroke="#B07A4E" stroke-width="0.7" opacity="0.5"/>
+        <line x1="38" y1="15" x2="36" y2="33" stroke="#B07A4E" stroke-width="0.7" opacity="0.3"/>
+        <rect x="6" y="14" width="36" height="20" rx="3" stroke="#8B5E3C" stroke-width="1.2"/>
+        <line x1="12" y1="14" x2="12" y2="22" stroke="#8B5E3C" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="16" y1="14" x2="16" y2="19" stroke="#8B5E3C" stroke-width="1" stroke-linecap="round"/>
+        <line x1="20" y1="14" x2="20" y2="22" stroke="#8B5E3C" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="24" y1="14" x2="24" y2="25" stroke="#8B5E3C" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="28" y1="14" x2="28" y2="22" stroke="#8B5E3C" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="32" y1="14" x2="32" y2="19" stroke="#8B5E3C" stroke-width="1" stroke-linecap="round"/>
+        <line x1="36" y1="14" x2="36" y2="22" stroke="#8B5E3C" stroke-width="1.2" stroke-linecap="round"/>
+        <text x="24" y="32" text-anchor="middle" font-size="7" fill="#8B5E3C" opacity="0.7">✦</text>
+        <defs>
+          <linearGradient id="woodGrain" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#E0AA7A" stop-opacity="0.6"/>
+            <stop offset="50%" stop-color="#C8956A" stop-opacity="0"/>
+            <stop offset="100%" stop-color="#A06840" stop-opacity="0.4"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div><div class="header-title">Ruler Growth Charts<span>Growth Tracker</span></div></div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn btn-export" title="Export CSV" onclick="exportCSV()">📤</button>
+    </div>
+  </div>
+
+
+  <div style="margin:0 24px 20px; background:#F5EDE4; border-radius:18px; padding:12px 18px; display:flex; align-items:center; gap:12px; box-shadow:0 4px 16px rgba(160,104,64,0.10); cursor:pointer;" onclick="window.open('https://www.rulergrowthcharts.com.au','_blank')">
+    <div style="font-size:22px; flex-shrink:0;">📏</div>
+    <div style="font-size:12px; font-weight:800; color:#A06840; letter-spacing:0.3px;">Shop at rulergrowthcharts.com.au →</div>
+  </div>
+
+
+  <div class="child-selector" id="child-selector">
+    <button class="child-pill-add" id="add-child-btn" onclick="openAddChildModal()">+ Add Child</button>
+  </div>
+
+
+  <div class="no-child-state" id="no-child-state">
+    <div class="empty-icon">👶</div>
+    <div class="empty-title">Welcome!</div>
+    <div class="empty-desc">Tap <strong>+ Add Child</strong> above to get started.</div>
+  </div>
+
+
+  <div class="empty-state" id="empty-state">
+    <div class="empty-icon">📏</div>
+    <div class="empty-title">No measurements yet</div>
+    <div class="empty-desc">Add your first measurement to start tracking this child's growth journey.</div>
+    <button class="empty-cta" onclick="openMeasureModal()">+ Add First Measurement</button>
+  </div>
+
+
+  <div class="data-sections" id="data-sections">
+    <div class="stats-row">
+      <div class="stat-card height">
+        <div class="stat-icon">📏</div>
+        <div class="stat-label">Height</div>
+        <div class="stat-value" id="stat-height">—</div>
+        <div class="stat-change" id="stat-height-change"></div>
+      </div>
+      <div class="stat-card weight">
+        <div class="stat-icon">⚖️</div>
+        <div class="stat-label">Weight</div>
+        <div class="stat-value" id="stat-weight">—</div>
+        <div class="stat-change" id="stat-weight-change"></div>
+      </div>
+      <div class="stat-card bmi">
+        <div class="stat-icon">💜</div>
+        <div class="stat-label">BMI</div>
+        <div class="stat-value" id="stat-bmi">—</div>
+        <div class="stat-change" id="stat-bmi-change" style="color:#9B8EC4;"></div>
+      </div>
+      <div class="stat-card age">
+        <div class="stat-icon">🎂</div>
+        <div class="stat-label">Age</div>
+        <div class="stat-value" id="stat-age" style="font-size:18px; padding-top:4px;">—</div>
+        <div class="stat-change" id="stat-age-change" style="color:#C9A055;"></div>
+      </div>
+    </div>
+
+
+```
+<div class="percentile-row">
+  <div class="percentile-card">
+    <div class="percentile-label">Height %ile</div>
+    <div class="percentile-value" id="pct-height">—</div>
+    <div class="percentile-sub">WHO Standard</div>
+  </div>
+  <div class="percentile-card">
+    <div class="percentile-label">Weight %ile</div>
+    <div class="percentile-value" id="pct-weight">—</div>
+    <div class="percentile-sub">WHO Standard</div>
+  </div>
+  <div class="percentile-card">
+    <div class="percentile-label">Head Circ.</div>
+    <div class="percentile-value" id="pct-head">—</div>
+    <div class="percentile-sub" id="pct-head-sub"></div>
+  </div>
+</div>
+
+
+<div class="section">
+  <div class="section-header"><div class="section-title">Growth Curve</div></div>
+  <div class="chart-card">
+    <div class="chart-tabs">
+      <button class="chart-tab active" onclick="switchTab(this,'height')">Height</button>
+      <button class="chart-tab" onclick="switchTab(this,'weight')">Weight</button>
+      <button class="chart-tab" onclick="switchTab(this,'bmi')">BMI</button>
+    </div>
+    <div class="chart-area">
+      <svg class="chart" viewBox="0 0 340 140" preserveAspectRatio="none">
+        <line x1="0" y1="30" x2="340" y2="30" stroke="#E8F2EF" stroke-width="1"/>
+        <line x1="0" y1="60" x2="340" y2="60" stroke="#E8F2EF" stroke-width="1"/>
+        <line x1="0" y1="90" x2="340" y2="90" stroke="#E8F2EF" stroke-width="1"/>
+        <line x1="0" y1="120" x2="340" y2="120" stroke="#E8F2EF" stroke-width="1"/>
+        <path id="chart-area-fill" d="" fill="url(#chartGrad)" opacity="0.3"/>
+        <path id="chart-path" d="" fill="none" stroke="var(--sage)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <g id="chart-dots"></g>
+        <text id="chart-empty-msg" x="170" y="75" text-anchor="middle" font-family="Nunito" font-size="12" font-weight="700" fill="#9BB5AE">No data — add a measurement</text>
+        <defs>
+          <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--sage)" stop-opacity="0.6"/>
+            <stop offset="100%" stop-color="var(--sage)" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <div style="display:flex; justify-content:space-between; margin-top:8px;" id="chart-x-labels"></div>
+  </div>
+</div>
+
+
+<div class="section">
+  <div class="section-header">
+    <div class="section-title">Milestones</div>
+    <span class="section-action" onclick="openMilestoneModal()">+ Add →</span>
+  </div>
+  <div class="milestone-list" id="milestone-list"></div>
+</div>
+```
+
+
+  </div>
+</div>
+
+
+<button class="fab hidden" id="fab" onclick="openMeasureModal()"><span>+</span> Add Measurement</button>
+
+
+<div class="toast" id="toast"></div>
+
+
+<!-- Add Child Modal -->
+
+
+<div class="modal-overlay" id="add-child-modal" onclick="closeModalOutside(event,'add-child-modal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Child</div>
+    <div class="form-group">
+      <label class="form-label">Name</label>
+      <input class="form-input" type="text" id="child-name-input" placeholder="e.g. Mia"
+        onkeydown="if(event.key==='Enter') confirmAddChild();">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Date of Birth</label>
+      <input class="form-input" type="date" id="child-dob-input">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Sex</label>
+      <div class="sex-toggle">
+        <div class="sex-opt selected" id="sex-girl" onclick="selectSex('girl')">👧 Girl</div>
+        <div class="sex-opt" id="sex-boy" onclick="selectSex('boy')">👦 Boy</div>
+      </div>
+    </div>
+    <button class="btn-save" onclick="confirmAddChild()">Add Child 🌱</button>
+  </div>
+</div>
+
+
+<!-- Measurement Modal -->
+
+
+<div class="modal-overlay" id="measure-modal" onclick="closeModalOutside(event,'measure-modal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="measure-modal-title">New Measurement</div>
+    <div class="form-group">
+      <label class="form-label">Date</label>
+      <input class="form-input" type="date" id="measure-date">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Height (cm)</label>
+        <input class="form-input" type="number" placeholder="e.g. 85" id="height-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Weight (kg)</label>
+        <input class="form-input" type="number" placeholder="e.g. 12.5" id="weight-input">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Head Circ. (cm)</label>
+        <input class="form-input" type="number" placeholder="e.g. 46" id="head-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <input class="form-input" type="text" placeholder="e.g. Doctor visit" id="notes-input">
+      </div>
+    </div>
+    <button class="btn-save" onclick="saveMeasurement()">Save Measurement 🌱</button>
+  </div>
+</div>
+
+
+<!-- Milestone Modal -->
+
+
+<div class="modal-overlay" id="milestone-modal" onclick="closeModalOutside(event,'milestone-modal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Milestone</div>
+    <div class="form-group">
+      <label class="form-label">Milestone</label>
+      <input class="form-input" type="text" placeholder="e.g. First steps, First word…" id="milestone-title-input">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Icon</label>
+      <div class="emoji-picker" id="emoji-picker"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input class="form-input" type="date" id="milestone-date-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <div class="radio-row">
+          <div class="radio-opt selected" id="status-achieved" onclick="selectStatus('achieved')">✓ Done</div>
+          <div class="radio-opt" id="status-upcoming" onclick="selectStatus('upcoming')">Soon</div>
+        </div>
+      </div>
+    </div>
+    <button class="btn-save" onclick="saveMilestone()">Save Milestone ⭐</button>
+  </div>
+</div>
+
+
+<script>
+// ── WHO LMS Data ───────────────────────────────────────────────────────────────
+// LMS parameters from WHO Child Growth Standards (0-60 months) and
+// WHO Reference 2007 (61-228 months). Format: [months, L, M, S]
+// Height-for-age: girls
+const WHO_HFA_GIRLS = [
+  [0,1,49.1477,0.0379],[1,1,53.6872,0.0356],[2,1,57.0673,0.0346],[3,1,59.8029,0.0335],
+  [4,1,62.0899,0.0325],[5,1,64.0301,0.0322],[6,1,65.7311,0.0325],[7,1,67.2873,0.0329],
+  [8,1,68.7498,0.0328],[9,1,70.1435,0.0328],[10,1,71.4818,0.0330],[11,1,72.771,0.0332],
+  [12,1,74.0154,0.0331],[13,1,75.2176,0.0331],[14,1,76.3817,0.0332],[15,1,77.5099,0.0333],
+  [16,1,78.6055,0.0333],[17,1,79.6713,0.0334],[18,1,80.7079,0.0334],[19,1,81.7182,0.0335],
+  [20,1,82.7036,0.0335],[21,1,83.6654,0.0337],[22,1,84.6052,0.0337],[23,1,85.5244,0.0337],
+  [24,1,86.4241,0.0340],[25,1,87.3055,0.0342],[26,1,88.1697,0.0344],[27,1,89.0179,0.0345],
+  [28,1,89.8507,0.0347],[29,1,90.669,0.0348],[30,1,91.4733,0.0349],[31,1,92.2641,0.0350],
+  [32,1,93.0421,0.0351],[33,1,93.8076,0.0352],[34,1,94.5613,0.0353],[35,1,95.3034,0.0354],
+  [36,1,96.0344,0.0355],[37,1,96.7547,0.0356],[38,1,97.4646,0.0357],[39,1,98.1648,0.0357],
+  [40,1,98.8554,0.0358],[41,1,99.537,0.0359],[42,1,100.21,0.0360],[43,1,100.875,0.0360],
+  [44,1,101.534,0.0361],[45,1,102.187,0.0362],[46,1,102.835,0.0362],[47,1,103.478,0.0363],
+  [48,1,104.117,0.0364],[49,1,104.752,0.0365],[50,1,105.383,0.0365],[51,1,106.011,0.0366],
+  [52,1,106.636,0.0367],[53,1,107.258,0.0368],[54,1,107.877,0.0369],[55,1,108.494,0.0370],
+  [56,1,109.109,0.0371],[57,1,109.722,0.0372],[58,1,110.333,0.0373],[59,1,110.942,0.0374],[60,1,111.55,0.0375],
+  // WHO Ref 2007 girls 5-19y (61-228 months)
+  [61,1,112.164,0.0376],[72,1,118.027,0.0384],[84,1,124.178,0.0398],[96,1,130.323,0.0413],
+  [108,1,136.531,0.0428],[120,1,142.921,0.0441],[132,1,149.395,0.0447],[144,1,154.632,0.0444],
+  [156,1,157.972,0.0432],[168,1,159.981,0.0420],[180,1,161.007,0.0413],[192,1,161.554,0.0410],
+  [204,1,161.878,0.0408],[216,1,162.114,0.0407],[228,1,162.306,0.0407]
+];
+// Height-for-age: boys
+const WHO_HFA_BOYS = [
+  [0,1,49.8842,0.0379],[1,1,54.7244,0.0355],[2,1,58.4249,0.0346],[3,1,61.4292,0.0335],
+  [4,1,63.886,0.0325],[5,1,65.9026,0.0319],[6,1,67.6236,0.0319],[7,1,69.1645,0.0322],
+  [8,1,70.5994,0.0322],[9,1,71.9687,0.0323],[10,1,73.2812,0.0325],[11,1,74.5388,0.0327],
+  [12,1,75.7488,0.0328],[13,1,76.9186,0.0329],[14,1,78.0497,0.0330],[15,1,79.1458,0.0331],
+  [16,1,80.2113,0.0332],[17,1,81.2487,0.0333],[18,1,82.2577,0.0334],[19,1,83.2418,0.0335],
+  [20,1,84.1996,0.0335],[21,1,85.1348,0.0337],[22,1,86.0477,0.0338],[23,1,86.9407,0.0338],
+  [24,1,87.8161,0.0341],[25,1,88.6753,0.0342],[26,1,89.5194,0.0344],[27,1,90.349,0.0345],
+  [28,1,91.1651,0.0346],[29,1,91.9682,0.0347],[30,1,92.7587,0.0348],[31,1,93.5371,0.0349],
+  [32,1,94.304,0.0350],[33,1,95.0597,0.0351],[34,1,95.8048,0.0352],[35,1,96.5399,0.0353],
+  [36,1,97.2654,0.0354],[37,1,97.9819,0.0355],[38,1,98.6898,0.0356],[39,1,99.3897,0.0357],
+  [40,1,100.082,0.0358],[41,1,100.768,0.0358],[42,1,101.448,0.0359],[43,1,102.122,0.0360],
+  [44,1,102.791,0.0360],[45,1,103.455,0.0361],[46,1,104.115,0.0362],[47,1,104.771,0.0362],
+  [48,1,105.423,0.0363],[49,1,106.072,0.0364],[50,1,106.718,0.0365],[51,1,107.362,0.0365],
+  [52,1,108.003,0.0366],[53,1,108.641,0.0367],[54,1,109.278,0.0368],[55,1,109.912,0.0369],
+  [56,1,110.545,0.0370],[57,1,111.177,0.0371],[58,1,111.807,0.0372],[59,1,112.435,0.0373],[60,1,113.063,0.0374],
+  [61,1,113.679,0.0375],[72,1,120.188,0.0385],[84,1,126.777,0.0397],[96,1,133.423,0.0410],
+  [108,1,140.188,0.0423],[120,1,147.143,0.0437],[132,1,154.322,0.0450],[144,1,161.407,0.0453],
+  [156,1,166.884,0.0442],[168,1,170.538,0.0424],[180,1,172.662,0.0410],[192,1,173.813,0.0402],
+  [204,1,174.457,0.0397],[216,1,174.868,0.0394],[228,1,175.144,0.0392]
+];
+// Weight-for-age: girls (0-120 months only — WHO doesn't publish WFA beyond 10y)
+const WHO_WFA_GIRLS = [
+  [0,0.3809,3.2322,0.1418],[1,0.2125,4.1873,0.1349],[2,0.3508,5.1282,0.1289],[3,0.2986,6.0522,0.1266],
+  [4,0.2113,6.8944,0.1252],[5,0.1534,7.6408,0.1247],[6,0.1329,8.3089,0.1265],[7,0.1025,8.9164,0.1272],
+  [8,0.0630,9.4628,0.1289],[9,0.0395,9.9538,0.1297],[10,0.0231,10.3968,0.1300],[11,0.0039,10.8067,0.1310],
+  [12,-0.0254,11.1799,0.1318],[13,-0.0368,11.5362,0.1326],[14,-0.0459,11.8772,0.1333],[15,-0.0547,12.2057,0.1340],
+  [16,-0.0632,12.5215,0.1348],[17,-0.0712,12.8268,0.1357],[18,-0.0791,13.1222,0.1366],[19,-0.0869,13.4092,0.1374],
+  [20,-0.0946,13.6882,0.1382],[21,-0.1022,13.9601,0.1389],[22,-0.1097,14.2258,0.1397],[23,-0.1171,14.4855,0.1404],
+  [24,-0.1245,14.7396,0.1411],[25,-0.1317,14.9884,0.1418],[26,-0.1389,15.2326,0.1425],[27,-0.1460,15.4724,0.1432],
+  [28,-0.1530,15.7083,0.1439],[29,-0.1599,15.9406,0.1446],[30,-0.1668,16.1698,0.1453],[31,-0.1736,16.3962,0.1460],
+  [32,-0.1803,16.6200,0.1467],[33,-0.1869,16.8415,0.1474],[34,-0.1934,17.0609,0.1481],[35,-0.1998,17.2786,0.1488],
+  [36,-0.2061,17.4946,0.1495],[42,-0.2370,18.5337,0.1527],[48,-0.2652,19.5462,0.1563],[54,-0.2912,20.5455,0.1603],
+  [60,-0.3153,21.5469,0.1647],[66,-0.3380,22.5684,0.1697],[72,-0.3596,23.6347,0.1754],
+  [84,-0.4007,25.9696,0.1882],[96,-0.4396,28.6050,0.2027],[108,-0.4768,31.5949,0.2185],[120,-0.5127,35.0803,0.2353]
+];
+// Weight-for-age: boys
+const WHO_WFA_BOYS = [
+  [0,0.3487,3.3464,0.1415],[1,0.2297,4.4709,0.1333],[2,0.2000,5.5675,0.1261],[3,0.2559,6.3762,0.1240],
+  [4,0.3101,7.0023,0.1224],[5,0.2929,7.5105,0.1215],[6,0.1824,7.9340,0.1215],[7,0.1464,8.2970,0.1224],
+  [8,0.1102,8.6151,0.1234],[9,0.0842,8.9014,0.1244],[10,0.0680,9.1635,0.1254],[11,0.0477,9.4122,0.1264],
+  [12,0.0307,9.6479,0.1274],[13,0.0223,9.8749,0.1283],[14,0.0059,10.0953,0.1296],[15,-0.0100,10.3108,0.1306],
+  [16,-0.0241,10.5228,0.1317],[17,-0.0378,10.7320,0.1327],[18,-0.0513,10.9385,0.1337],[19,-0.0647,11.1425,0.1347],
+  [20,-0.0778,11.3444,0.1357],[21,-0.0908,11.5443,0.1367],[22,-0.1037,11.7423,0.1377],[23,-0.1164,11.9385,0.1386],
+  [24,-0.1290,12.1332,0.1395],[25,-0.1415,12.3265,0.1405],[26,-0.1538,12.5184,0.1414],[27,-0.1660,12.7091,0.1423],
+  [28,-0.1780,12.8987,0.1432],[29,-0.1898,13.0874,0.1441],[30,-0.2016,13.2751,0.1450],[31,-0.2132,13.4621,0.1459],
+  [32,-0.2246,13.6484,0.1467],[33,-0.2358,13.8341,0.1476],[34,-0.2469,14.0193,0.1485],[35,-0.2578,14.2041,0.1494],
+  [36,-0.2686,14.3886,0.1502],[42,-0.3250,15.2847,0.1545],[48,-0.3780,16.1933,0.1591],[54,-0.4281,17.1318,0.1642],
+  [60,-0.4756,18.1144,0.1700],[66,-0.5210,19.1518,0.1764],[72,-0.5644,20.2528,0.1833],
+  [84,-0.6469,22.6838,0.1985],[96,-0.7260,25.5497,0.2151],[108,-0.8021,28.9010,0.2325],[120,-0.8752,32.8328,0.2504]
+];
+
+
+// ── WHO LMS lookup & percentile calc ─────────────────────────────────────────
+function lmsLookup(table, ageMonths) {
+  // Find two nearest entries and interpolate
+  let lo = table[0], hi = table[table.length-1];
+  for (let i = 0; i < table.length - 1; i++) {
+    if (table[i][0] <= ageMonths && table[i+1][0] >= ageMonths) {
+      lo = table[i]; hi = table[i+1]; break;
+    }
+  }
+  if (lo[0] === hi[0]) return { L: lo[1], M: lo[2], S: lo[3] };
+  const t = (ageMonths - lo[0]) / (hi[0] - lo[0]);
+  return { L: lo[1]+t*(hi[1]-lo[1]), M: lo[2]+t*(hi[2]-lo[2]), S: lo[3]+t*(hi[3]-lo[3]) };
+}
+
+
+// Standard normal CDF (Abramowitz & Stegun approximation)
+function normCDF(z) {
+  if (z < -6) return 0; if (z > 6) return 1;
+  const p = 0.2316419, b = [0.319381530,-0.356563782,1.781477937,-1.821255978,1.330274429];
+  const t = 1/(1+p*Math.abs(z));
+  const poly = t*(b[0]+t*(b[1]+t*(b[2]+t*(b[3]+t*b[4]))));
+  const pdf = Math.exp(-z*z/2)/Math.sqrt(2*Math.PI);
+  const c = 1 - pdf*poly;
+  return z >= 0 ? c : 1-c;
+}
+
+
+function calcPercentile(value, ageMonths, table) {
+  if (!value || ageMonths < 0 || ageMonths > 228) return null;
+  // Clamp to table range
+  const minAge = table[0][0], maxAge = table[table.length-1][0];
+  if (ageMonths < minAge || ageMonths > maxAge) return null;
+  const {L, M, S} = lmsLookup(table, ageMonths);
+  let z;
+  if (Math.abs(L) < 0.0001) {
+    z = Math.log(value/M) / S;
+  } else {
+    z = (Math.pow(value/M, L) - 1) / (L*S);
+  }
+  return Math.round(normCDF(z) * 100);
+}
+
+
+function formatPct(p) {
+  if (p === null) return '—';
+  if (p <= 0) return '<1';
+  if (p >= 100) return '>99';
+  const s = p.toString();
+  const last = parseInt(s.slice(-1));
+  const suffix = p >= 11 && p <= 13 ? 'th' : last === 1 ? 'st' : last === 2 ? 'nd' : last === 3 ? 'rd' : 'th';
+  return p + suffix;
+}
+
+
+function ageInMonths(dob, measureDate) {
+  const d1 = new Date(dob), d2 = new Date(measureDate);
+  return (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth()) +
+    (d2.getDate() >= d1.getDate() ? 0 : -1);
+}
+
+
+function formatAge(months) {
+  if (months < 0) return 'N/A';
+  const y = Math.floor(months / 12), m = months % 12;
+  if (y === 0) return `${m}mo`;
+  if (m === 0) return `${y}y`;
+  return `${y}y ${m}mo`;
+}
+
+
+// ── State ──────────────────────────────────────────────
+const STORAGE_KEY = 'rgc_tracker_v2';
+const MILESTONE_EMOJIS = ['🚶','💬','🎨','🍼','🏃','🧩','🎂','📚','🚲','🏊','✏️','🎵','🌟','🦷','👟','🫂'];
+let selectedEmoji = MILESTONE_EMOJIS[0];
+let selectedStatus = 'achieved';
+let selectedSex = 'girl';
+let state = { children: [], activeId: null, activeTab: 'height' };
+
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ children: state.children, activeId: state.activeId })); } catch(e) {}
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      state.children = saved.children || [];
+      state.activeId = saved.activeId || (state.children[0]?.id ?? null);
+    }
+  } catch(e) {}
+}
+
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+
+// Emoji picker
+const picker = document.getElementById('emoji-picker');
+MILESTONE_EMOJIS.forEach((em, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'emoji-opt' + (i===0?' selected':'');
+  btn.textContent = em;
+  btn.onclick = () => { picker.querySelectorAll('.emoji-opt').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); selectedEmoji=em; };
+  picker.appendChild(btn);
+});
+
+
+function selectStatus(s) {
+  selectedStatus = s;
+  document.getElementById('status-achieved').classList.toggle('selected', s==='achieved');
+  document.getElementById('status-upcoming').classList.toggle('selected', s==='upcoming');
+}
+function selectSex(s) {
+  selectedSex = s;
+  document.getElementById('sex-girl').classList.toggle('selected', s==='girl');
+  document.getElementById('sex-boy').classList.toggle('selected', s==='boy');
+}
+
+
+// ── Child management ───────────────────────────────────
+function openAddChildModal() {
+  document.getElementById('child-name-input').value = '';
+  document.getElementById('child-dob-input').value = '';
+  selectedSex = 'girl';
+  selectSex('girl');
+  document.getElementById('add-child-modal').classList.add('open');
+  setTimeout(() => document.getElementById('child-name-input').focus(), 350);
+}
+function confirmAddChild() {
+  const name = document.getElementById('child-name-input').value.trim();
+  const dob  = document.getElementById('child-dob-input').value;
+  if (!name || !dob) { showToast('Please enter a name and date of birth'); return; }
+  const emojis = ['🌸','🌿','🌼','🌻','🍀','🌱','⭐','🦋'];
+  const child = { id: Date.now().toString(), name, dob, sex: selectedSex, emoji: emojis[state.children.length % emojis.length], measurements: [], milestones: [] };
+  state.children.push(child);
+  saveState();
+  document.getElementById('add-child-modal').classList.remove('open');
+  renderChildPills();
+  setActiveChild(child.id);
+}
+function removeChild(id, e) {
+  e.stopPropagation();
+  state.children = state.children.filter(c => c.id !== id);
+  if (state.activeId === id) state.activeId = state.children.length ? state.children[state.children.length-1].id : null;
+  saveState(); renderChildPills(); renderActiveChild();
+}
+function setActiveChild(id) {
+  state.activeId = id; saveState(); renderChildPills(); renderActiveChild();
+}
+function renderChildPills() {
+  const selector = document.getElementById('child-selector');
+  selector.querySelectorAll('.child-pill').forEach(p => p.remove());
+  const addBtn = document.getElementById('add-child-btn');
+  state.children.forEach(child => {
+    const pill = document.createElement('button');
+    pill.className = 'child-pill' + (child.id===state.activeId?' active':'');
+    pill.innerHTML = `${child.emoji} ${child.name} <span class="pill-remove">×</span>`;
+    pill.onclick = e => e.target.classList.contains('pill-remove') ? removeChild(child.id, e) : setActiveChild(child.id);
+    selector.insertBefore(pill, addBtn);
+  });
+}
+
+
+// ── Render ─────────────────────────────────────────────
+function renderActiveChild() {
+  const child = state.children.find(c => c.id===state.activeId);
+  const fab = document.getElementById('fab');
+  const noChild = document.getElementById('no-child-state');
+  const emptyState = document.getElementById('empty-state');
+  const dataSections = document.getElementById('data-sections');
+  noChild.style.display='none'; emptyState.classList.remove('visible'); dataSections.classList.remove('visible');
+  if (!child) { fab.classList.add('hidden'); noChild.style.display = state.children.length===0?'block':'none'; return; }
+  fab.classList.remove('hidden');
+  document.getElementById('measure-modal-title').textContent = `New Measurement — ${child.name}`;
+  if (child.measurements.length===0) { emptyState.classList.add('visible'); }
+  else { dataSections.classList.add('visible'); renderStats(child); renderChart(child, state.activeTab); }
+  renderMilestones(child);
+}
+
+
+function renderStats(child) {
+  const sorted = [...child.measurements].sort((a,b) => new Date(a.date)-new Date(b.date));
+  const latest = sorted[sorted.length-1];
+  const prev = sorted.length>1 ? sorted[sorted.length-2] : null;
+
+
+  // Height
+  if (latest.height) {
+    document.getElementById('stat-height').innerHTML = `${latest.height} <span class="stat-unit">cm</span>`;
+    document.getElementById('stat-height-change').textContent = prev?.height ? `↑ +${(latest.height-prev.height).toFixed(1)} cm since last` : 'First measurement';
+  } else { document.getElementById('stat-height').textContent='—'; document.getElementById('stat-height-change').textContent=''; }
+
+
+  // Weight
+  if (latest.weight) {
+    document.getElementById('stat-weight').innerHTML = `${latest.weight} <span class="stat-unit">kg</span>`;
+    document.getElementById('stat-weight-change').textContent = prev?.weight ? `↑ +${(latest.weight-prev.weight).toFixed(1)} kg since last` : 'First measurement';
+  } else { document.getElementById('stat-weight').textContent='—'; document.getElementById('stat-weight-change').textContent=''; }
+
+
+  // BMI
+  if (latest.height && latest.weight) {
+    document.getElementById('stat-bmi').textContent = (latest.weight/((latest.height/100)**2)).toFixed(1);
+    document.getElementById('stat-bmi-change').textContent = 'Calculated';
+  } else { document.getElementById('stat-bmi').textContent='—'; document.getElementById('stat-bmi-change').textContent=''; }
+
+
+  // Age
+  const mos = ageInMonths(child.dob, latest.date);
+  document.getElementById('stat-age').textContent = formatAge(mos);
+  document.getElementById('stat-age-change').textContent = latest.notes || '';
+
+
+  // Percentiles
+  const isGirl = child.sex === 'girl';
+  const hTable = isGirl ? WHO_HFA_GIRLS : WHO_HFA_BOYS;
+  const wTable = isGirl ? WHO_WFA_GIRLS : WHO_WFA_BOYS;
+
+
+  const hPct = latest.height ? calcPercentile(latest.height, mos, hTable) : null;
+  const wPct = latest.weight ? calcPercentile(latest.weight * 1, mos, wTable) : null;
+
+
+  document.getElementById('pct-height').textContent = formatPct(hPct);
+  document.getElementById('pct-weight').textContent = formatPct(wPct);
+  document.getElementById('pct-head').textContent = latest.head ? `${latest.head} cm` : '—';
+  document.getElementById('pct-head-sub').textContent = latest.head ? 'Head circumference' : '';
+}
+
+
+function renderMilestones(child) {
+  const list = document.getElementById('milestone-list');
+  if (!child || child.milestones.length===0) { list.innerHTML='<div class="milestone-empty">No milestones recorded yet.</div>'; return; }
+  list.innerHTML='';
+  child.milestones.forEach((m, idx) => {
+    const item = document.createElement('div');
+    item.className='milestone-item';
+    const bg = m.status==='achieved' ? 'var(--sage-pale)' : 'var(--blush-light)';
+    item.innerHTML=`<div class="milestone-icon" style="background:${bg}">${m.emoji}</div>
+      <div class="milestone-info"><div class="milestone-title">${m.title}</div>
+      <div class="milestone-date">${m.date?new Date(m.date).toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'}):'Date not set'}</div></div>
+      <span class="milestone-badge ${m.status==='achieved'?'badge-achieved':'badge-upcoming'}">${m.status==='achieved'?'✓ Done':'Soon'}</span>
+      <span style="margin-left:6px;cursor:pointer;font-size:16px;color:var(--light-text);" onclick="removeMilestone(${idx})">×</span>`;
+    list.appendChild(item);
+  });
+}
+function removeMilestone(idx) {
+  const child = state.children.find(c=>c.id===state.activeId);
+  if (!child) return;
+  child.milestones.splice(idx,1); saveState(); renderMilestones(child);
+}
+
+
+// ── Chart ──────────────────────────────────────────────
+function switchTab(btn, tab) {
+  document.querySelectorAll('.chart-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active'); state.activeTab=tab;
+  const child = state.children.find(c=>c.id===state.activeId);
+  if (child) renderChart(child, tab);
+}
+function renderChart(child, tab) {
+  const sorted = [...child.measurements].filter(m=>tab==='bmi'?(m.height&&m.weight):m[tab]).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const emptyMsg=document.getElementById('chart-empty-msg'), path=document.getElementById('chart-path'),
+        areaFill=document.getElementById('chart-area-fill'), dots=document.getElementById('chart-dots'),
+        xLabels=document.getElementById('chart-x-labels');
+  dots.innerHTML=''; xLabels.innerHTML='';
+  const colors={height:'var(--sage)',weight:'var(--blush)',bmi:'#B8A9D9'};
+  path.style.stroke=colors[tab];
+  if (sorted.length<2) {
+    path.setAttribute('d',''); areaFill.setAttribute('d',''); emptyMsg.style.display='';
+    emptyMsg.textContent=sorted.length===0?'No data — add a measurement':'Add one more entry to see a chart'; return;
+  }
+  emptyMsg.style.display='none';
+  const vals=sorted.map(m=>tab==='bmi'?parseFloat((m.weight/((m.height/100)**2)).toFixed(1)):parseFloat(m[tab]));
+  const minV=Math.min(...vals),maxV=Math.max(...vals),range=maxV-minV||1;
+  const W=340,H=130,PAD=10;
+  const pts=sorted.map((m,i)=>({x:(i/(sorted.length-1))*(W-PAD*2)+PAD,y:H-((vals[i]-minV)/range)*(H-PAD*2)-PAD,m,v:vals[i]}));
+  const lineD=pts.map((p,i)=>`${i===0?'M':'L'}${p.x},${p.y}`).join(' ');
+  path.setAttribute('d',lineD); areaFill.setAttribute('d',lineD+` L${pts[pts.length-1].x},140 L${pts[0].x},140 Z`);
+  pts.forEach((p,i)=>{
+    const isLast=i===pts.length-1, c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',p.x); c.setAttribute('cy',p.y); c.setAttribute('r',isLast?6:4);
+    c.setAttribute('fill',isLast?colors[tab]:'white'); c.setAttribute('stroke',colors[tab]); c.setAttribute('stroke-width',isLast?2.5:2);
+    dots.appendChild(c);
+  });
+  pts.forEach((p,i)=>{
+    if (i===0||i===pts.length-1||(sorted.length>4&&i%Math.ceil(sorted.length/4)===0)) {
+      const span=document.createElement('span');
+      span.textContent=new Date(p.m.date).toLocaleDateString('en-AU',{month:'short',year:'2-digit'});
+      span.style.cssText=`font-size:10px;font-weight:700;color:${i===pts.length-1?colors[tab]:'var(--light-text)'}`;
+      xLabels.appendChild(span);
+    }
+  });
+}
+
+
+// ── Modals ─────────────────────────────────────────────
+function openMeasureModal() {
+  document.getElementById('measure-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('measure-modal').classList.add('open');
+}
+function openMilestoneModal() {
+  document.getElementById('milestone-date-input').value=new Date().toISOString().split('T')[0];
+  document.getElementById('milestone-title-input').value='';
+  selectStatus('achieved'); selectedEmoji=MILESTONE_EMOJIS[0];
+  picker.querySelectorAll('.emoji-opt').forEach((b,i)=>b.classList.toggle('selected',i===0));
+  document.getElementById('milestone-modal').classList.add('open');
+}
+function closeModalOutside(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
+
+
+function saveMeasurement() {
+  const child=state.children.find(c=>c.id===state.activeId); if(!child) return;
+  const height=parseFloat(document.getElementById('height-input').value)||null;
+  const weight=parseFloat(document.getElementById('weight-input').value)||null;
+  const head=parseFloat(document.getElementById('head-input').value)||null;
+  const notes=document.getElementById('notes-input').value.trim()||'';
+  const date=document.getElementById('measure-date').value||new Date().toISOString().split('T')[0];
+  if(!height&&!weight&&!head) return;
+  child.measurements.push({date,height,weight,head,notes}); saveState();
+  ['height-input','weight-input','head-input','notes-input'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('measure-modal').classList.remove('open');
+  renderActiveChild(); showToast('✓ Measurement saved');
+}
+function saveMilestone() {
+  const child=state.children.find(c=>c.id===state.activeId); if(!child) return;
+  const title=document.getElementById('milestone-title-input').value.trim();
+  if(!title){document.getElementById('milestone-title-input').focus();return;}
+  const date=document.getElementById('milestone-date-input').value||null;
+  child.milestones.push({title,emoji:selectedEmoji,date,status:selectedStatus}); saveState();
+  document.getElementById('milestone-modal').classList.remove('open');
+  renderMilestones(child); showToast('⭐ Milestone saved');
+}
+
+
+// ── CSV Export ─────────────────────────────────────────
+function exportCSV() {
+  if(!state.children.length){showToast('No data to export yet');return;}
+  let csv='Child,Sex,DOB,Date,Age (months),Height (cm),Weight (kg),Head Circ. (cm),BMI,Height %ile,Weight %ile,Notes\n';
+  state.children.forEach(child=>{
+    const isGirl=child.sex==='girl';
+    const hTable=isGirl?WHO_HFA_GIRLS:WHO_HFA_BOYS, wTable=isGirl?WHO_WFA_GIRLS:WHO_WFA_BOYS;
+    [...child.measurements].sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(m=>{
+      const mos=ageInMonths(child.dob,m.date);
+      const bmi=m.height&&m.weight?(m.weight/((m.height/100)**2)).toFixed(1):'';
+      const hPct=m.height?calcPercentile(m.height,mos,hTable)??'':'';
+      const wPct=m.weight?calcPercentile(m.weight,mos,wTable)??'':'';
+      csv+=[child.name,child.sex,child.dob,m.date,mos,m.height||'',m.weight||'',m.head||'',bmi,hPct,wPct,`"${(m.notes||'').replace(/"/g,'""')}"`].join(',')+'\n';
+    });
+  });
+  const blob=new Blob([csv],{type:'text/csv'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url; a.download='growth-data.csv'; a.click(); URL.revokeObjectURL(url);
+  showToast('📥 CSV downloaded');
+}
+
+
+// ── Init ───────────────────────────────────────────────
+loadState(); renderChildPills(); renderActiveChild();
+</script>
+
+
+</body>
+</html>
